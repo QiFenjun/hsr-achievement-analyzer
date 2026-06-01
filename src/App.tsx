@@ -4,6 +4,7 @@ import { CategoryView } from './components/CategoryView';
 import { Dashboard } from './components/Dashboard';
 import { DataTable } from './components/DataTable';
 import { ImportPanel } from './components/ImportPanel';
+import { GAME_DEFINITIONS, getGameDefinition } from './data/gameData';
 import { applyThemeMode, loadThemeMode, saveThemeMode } from './utils/theme';
 import {
   chooseSourceWorkbook,
@@ -16,12 +17,14 @@ import {
   type SourceFileHandle,
 } from './utils/sourceSync';
 import { loadRecords, resetRecords, saveRecords } from './utils/storage';
-import type { AchievementItem, FocusedGroup, GroupDimension, ImportMode, SourceSyncUiState, ThemeMode } from './types';
+import type { AchievementItem, FocusedGroup, GameKey, GroupDimension, ImportMode, SourceSyncUiState, ThemeMode } from './types';
 
 type ViewKey = 'dashboard' | 'table' | 'categories' | 'import';
 
 function App() {
-  const [records, setRecords] = useState<AchievementItem[]>(() => loadRecords());
+  const [activeGame, setActiveGame] = useState<GameKey>('starRail');
+  const activeGameDefinition = getGameDefinition(activeGame);
+  const [records, setRecords] = useState<AchievementItem[]>(() => loadRecords('starRail'));
   const [activeView, setActiveView] = useState<ViewKey>('dashboard');
   const [focusedGroup, setFocusedGroup] = useState<FocusedGroup | null>(null);
   const [importModeHint, setImportModeHint] = useState<ImportMode>('merge');
@@ -41,9 +44,9 @@ function App() {
   const latestRecordsRef = useRef(records);
 
   useEffect(() => {
-    saveRecords(records);
+    saveRecords(activeGame, records);
     latestRecordsRef.current = records;
-  }, [records]);
+  }, [activeGame, records]);
 
   useEffect(() => {
     saveThemeMode(themeMode);
@@ -152,13 +155,15 @@ function App() {
     const now = new Date().toISOString();
     const newRecord: AchievementItem = {
       id: createNextId(latestRecordsRef.current),
+      game: activeGame,
       name: '新成就',
-      achievementType: '非隐藏成就',
-      version: '4.3',
-      collection: '与你同行的回忆',
-      category: '与你同行的回忆',
-      subCategory: '非隐藏成就',
+      achievementType: activeGameDefinition.defaultAchievementType,
+      version: activeGameDefinition.defaultVersion,
+      collection: activeGameDefinition.defaultCollection,
+      category: activeGameDefinition.defaultCollection,
+      subCategory: activeGameDefinition.defaultAchievementType,
       completed: false,
+      apiId: '',
       note: '',
       source: '网页新增',
       description: '',
@@ -186,16 +191,31 @@ function App() {
   }
 
   function handleReset() {
-    const confirmed = window.confirm('确定要恢复到 4.3 成就大全数据吗？当前本地修改会被覆盖。');
+    const confirmed = window.confirm(`??????${activeGameDefinition.resetLabel}?????????????`);
     if (!confirmed) {
       return;
     }
 
-    const nextRecords = resetRecords();
+    const nextRecords = resetRecords(activeGame);
     latestRecordsRef.current = nextRecords;
     setRecords(nextRecords);
     queueSourceSync(nextRecords);
     setFocusedGroup(null);
+    setActiveView('dashboard');
+  }
+
+  function handleChangeGame(gameKey: GameKey) {
+    if (gameKey === activeGame) {
+      return;
+    }
+
+    window.clearTimeout(syncTimerRef.current);
+    setActiveGame(gameKey);
+    const nextRecords = loadRecords(gameKey);
+    latestRecordsRef.current = nextRecords;
+    setRecords(nextRecords);
+    setFocusedGroup(null);
+    setImportModeHint('merge');
     setActiveView('dashboard');
   }
 
@@ -313,9 +333,12 @@ function App() {
       <AppHeader
         activeView={activeView}
         records={records}
+        activeGame={activeGame}
+        games={GAME_DEFINITIONS}
         sourceSync={sourceSync}
         themeMode={themeMode}
         onBindSource={handleBindSource}
+        onChangeGame={handleChangeGame}
         onChangeThemeMode={setThemeMode}
         onChangeView={(view) => {
           if (view === 'import') {
@@ -331,7 +354,12 @@ function App() {
 
       <main className="app-main">
         {activeView === 'dashboard' && (
-          <Dashboard records={records} onOpenGroup={handleOpenGroup} onOpenImport={() => handleOpenImport('merge')} />
+          <Dashboard
+            records={records}
+            game={activeGameDefinition}
+            onOpenGroup={handleOpenGroup}
+            onOpenImport={() => handleOpenImport('merge')}
+          />
         )}
 
         {activeView === 'table' && (

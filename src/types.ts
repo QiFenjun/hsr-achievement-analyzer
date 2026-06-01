@@ -1,15 +1,20 @@
 export interface AchievementItem {
   id: string;
+  game?: GameKey;
   name: string;
+  englishName?: string;
   achievementType: string;
   version: string;
   collection: string;
+  englishCollection?: string;
   category: string;
   subCategory?: string;
   completed: boolean;
+  apiId?: string;
   note?: string;
   source?: string;
   description?: string;
+  englishDescription?: string;
   guide?: string;
   reward?: string;
   stellarJade?: number | string;
@@ -18,16 +23,35 @@ export interface AchievementItem {
   updatedAt?: string;
 }
 
+export type GameKey = 'starRail' | 'genshin';
+
+export interface GameDefinition {
+  key: GameKey;
+  label: string;
+  shortLabel: string;
+  title: string;
+  subtitle: string;
+  defaultVersion: string;
+  defaultCollection: string;
+  defaultAchievementType: string;
+  resetLabel: string;
+  records: AchievementItem[];
+}
+
 export type ImportableFieldKey =
   | 'id'
   | 'name'
+  | 'englishName'
   | 'achievementType'
   | 'version'
   | 'collection'
+  | 'englishCollection'
   | 'completed'
+  | 'apiId'
   | 'note'
   | 'source'
   | 'description'
+  | 'englishDescription'
   | 'guide'
   | 'reward'
   | 'stellarJade'

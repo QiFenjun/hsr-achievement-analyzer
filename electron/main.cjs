@@ -9,7 +9,7 @@ function createWindow() {
     height: 820,
     minWidth: 980,
     minHeight: 640,
-    title: `Star Rail Achievement Analyzer v${appVersion}`,
+    title: `Game Achievement Analyzer v${appVersion}`,
     backgroundColor: '#f8fafc',
     autoHideMenuBar: true,
     webPreferences: {

@@ -1,14 +1,15 @@
 import { CheckCircle2, CircleDashed, Database, Percent, Upload } from 'lucide-react';
-import type { AchievementItem, GroupDimension, GroupStat } from '../types';
+import type { AchievementItem, GameDefinition, GroupDimension, GroupStat } from '../types';
 import { GROUP_DIMENSIONS, GROUP_DIMENSION_LABELS, getGroupStats, getSummaryStats } from '../utils/stats';
 
 interface DashboardProps {
   records: AchievementItem[];
+  game: GameDefinition;
   onOpenGroup: (dimension: GroupDimension, value: string) => void;
   onOpenImport: () => void;
 }
 
-export function Dashboard({ records, onOpenGroup, onOpenImport }: DashboardProps) {
+export function Dashboard({ records, game, onOpenGroup, onOpenImport }: DashboardProps) {
   const summary = getSummaryStats(records);
 
   return (
@@ -16,7 +17,7 @@ export function Dashboard({ records, onOpenGroup, onOpenImport }: DashboardProps
       <div className="view-title-row">
         <div>
           <p className="eyebrow">Overview</p>
-          <h2>星穹铁道成就完成度</h2>
+          <h2>{game.title}</h2>
         </div>
         <button className="primary-button" type="button" onClick={onOpenImport}>
           <Upload size={18} />
@@ -66,7 +67,7 @@ export function Dashboard({ records, onOpenGroup, onOpenImport }: DashboardProps
             </div>
           </div>
           <p className="panel-note">
-            当前示例数据来自 4.3 版本成就大全。勾选完成状态或编辑备注后会自动保存到浏览器本地。
+            当前数据来自{game.resetLabel}。勾选完成状态或编辑备注后会自动保存到本地。
           </p>
         </section>
       </div>

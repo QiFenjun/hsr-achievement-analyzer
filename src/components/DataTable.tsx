@@ -21,6 +21,7 @@ type EditableField =
   | 'collection'
   | 'source'
   | 'stellarJade'
+  | 'apiId'
   | 'note';
 
 export function DataTable({
@@ -59,10 +60,14 @@ export function DataTable({
           record.achievementType,
           record.version,
           record.collection,
+          record.englishName,
+          record.englishCollection,
           record.source,
           record.description,
+          record.englishDescription,
           record.guide,
           record.reward,
+          record.apiId,
           record.note,
         ]
           .filter(Boolean)
@@ -149,7 +154,7 @@ export function DataTable({
             <option value="all">全部{GROUP_DIMENSION_LABELS[groupDimension]}</option>
             {groupOptions.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.value}（{option.total}）
+                {option.value}
               </option>
             ))}
           </select>
@@ -213,6 +218,7 @@ export function DataTable({
               <th>合集</th>
               <th>来源</th>
               <th>星琼</th>
+              <th>API ID</th>
               <th>备注</th>
               <th>更新时间/时间</th>
               <th>操作</th>
@@ -237,6 +243,7 @@ export function DataTable({
                 <EditableCell record={record} field="collection" onUpdateRecord={onUpdateRecord} />
                 <EditableCell record={record} field="source" onUpdateRecord={onUpdateRecord} />
                 <EditableCell record={record} field="stellarJade" onUpdateRecord={onUpdateRecord} compact />
+                <EditableCell record={record} field="apiId" onUpdateRecord={onUpdateRecord} />
                 <EditableCell record={record} field="note" onUpdateRecord={onUpdateRecord} wide />
                 <td className="date-cell">{formatDate(record.completedAt || record.updatedAt)}</td>
                 <td className="action-cell">

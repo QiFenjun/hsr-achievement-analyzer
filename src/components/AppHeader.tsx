@@ -15,17 +15,20 @@ import {
   Unlink,
   Upload,
 } from 'lucide-react';
-import type { AchievementItem, SourceSyncUiState, ThemeMode } from '../types';
+import type { AchievementItem, GameDefinition, GameKey, SourceSyncUiState, ThemeMode } from '../types';
 import { downloadSampleTemplate, exportRecordsToExcel } from '../utils/importExport';
 
 type ViewKey = 'dashboard' | 'table' | 'categories' | 'import';
 
 interface AppHeaderProps {
   activeView: ViewKey;
+  activeGame: GameKey;
+  games: GameDefinition[];
   records: AchievementItem[];
   sourceSync: SourceSyncUiState;
   themeMode: ThemeMode;
   onBindSource: () => void;
+  onChangeGame: (game: GameKey) => void;
   onChangeThemeMode: (mode: ThemeMode) => void;
   onChangeView: (view: ViewKey) => void;
   onManualSync: () => void;
@@ -43,10 +46,13 @@ const navItems: Array<{ key: ViewKey; label: string; icon: typeof BarChart3 }> =
 
 export function AppHeader({
   activeView,
+  activeGame,
+  games,
   records,
   sourceSync,
   themeMode,
   onBindSource,
+  onChangeGame,
   onChangeThemeMode,
   onChangeView,
   onManualSync,
@@ -54,6 +60,8 @@ export function AppHeader({
   onToggleAutoSync,
   onUnbindSource,
 }: AppHeaderProps) {
+  const currentGame = games.find((game) => game.key === activeGame) || games[0];
+
   return (
     <header className="app-header">
       <div className="brand-block">
@@ -61,31 +69,44 @@ export function AppHeader({
           <Sheet size={20} />
         </div>
         <div>
-          <p className="eyebrow">Star Rail Tracker v{__APP_VERSION__}</p>
-          <h1>星穹铁道成就分析</h1>
+          <p className="eyebrow">Game Achievement Analyzer v{__APP_VERSION__}</p>
+          <h1>{currentGame.title}</h1>
         </div>
       </div>
 
-      <nav className="nav-tabs" aria-label="主视图">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
+      <div className="header-toolbar">
+        <div className="segmented-control game-switcher" title="游戏">
+          {games.map((game) => (
             <button
-              key={item.key}
-              aria-label={item.label}
-              className={`nav-tab ${activeView === item.key ? 'is-active' : ''}`}
-              title={item.label}
+              key={game.key}
+              className={activeGame === game.key ? 'is-active' : ''}
               type="button"
-              onClick={() => onChangeView(item.key)}
+              onClick={() => onChangeGame(game.key)}
             >
-              <Icon size={17} />
-              <span>{item.label}</span>
+              {game.shortLabel}
             </button>
-          );
-        })}
-      </nav>
+          ))}
+        </div>
 
-      <div className="header-actions">
+        <nav className="nav-tabs" aria-label="主视图">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                aria-label={item.label}
+                className={`nav-tab ${activeView === item.key ? 'is-active' : ''}`}
+                title={item.label}
+                type="button"
+                onClick={() => onChangeView(item.key)}
+              >
+                <Icon size={17} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
         <div className="segmented-control theme-toggle" title="主题">
           <button
             aria-label="跟随系统主题"
@@ -156,7 +177,7 @@ export function AppHeader({
           <Download size={18} />
           <span>导出</span>
         </button>
-        <button className="icon-button muted" type="button" onClick={onReset} title="恢复 4.3 成就数据">
+        <button className="icon-button muted" type="button" onClick={onReset} title={`恢复${currentGame.resetLabel}`}>
           <RotateCcw size={18} />
         </button>
       </div>

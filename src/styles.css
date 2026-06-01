@@ -102,8 +102,8 @@ button:disabled {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: minmax(230px, 1fr) auto minmax(240px, 1fr);
-  gap: 18px;
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
   padding: 18px clamp(18px, 4vw, 42px);
   border-bottom: 1px solid rgb(148 163 184 / 0.16);
@@ -153,6 +153,14 @@ button:disabled {
   text-transform: uppercase;
 }
 
+.header-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
 .nav-tabs {
   display: flex;
   gap: 6px;
@@ -193,12 +201,6 @@ button:disabled {
   border-color: rgb(53 208 193 / 0.38);
   color: var(--text);
   background: rgb(53 208 193 / 0.12);
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
 }
 
 .icon-button,
@@ -979,8 +981,7 @@ html[data-theme='light'] .mapping-field select {
     align-items: stretch;
   }
 
-  .nav-tabs,
-  .header-actions {
+  .header-toolbar {
     justify-content: flex-start;
     overflow-x: auto;
   }

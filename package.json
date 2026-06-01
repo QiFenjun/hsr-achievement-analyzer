@@ -1,8 +1,8 @@
 {
-  "name": "game-completion-analyzer",
+  "name": "game-achievement-analyzer",
   "private": true,
-  "version": "1.0.0",
-  "description": "A local Star Rail achievement completion analyzer built with Vite, React, and TypeScript.",
+  "version": "1.0.1",
+  "description": "A multi-game achievement completion analyzer for web and desktop.",
   "license": "MIT",
   "type": "module",
   "main": "electron/main.cjs",
@@ -30,8 +30,8 @@
     "vite": "^6.0.7"
   },
   "build": {
-    "appId": "com.qifenjun.hsrAchievementAnalyzer",
-    "productName": "Star Rail Achievement Analyzer",
+    "appId": "com.qifenjun.gameAchievementAnalyzer",
+    "productName": "Game Achievement Analyzer",
     "directories": {
       "output": "release"
     },
