@@ -75,111 +75,113 @@ export function AppHeader({
       </div>
 
       <div className="header-toolbar">
-        <div className="segmented-control game-switcher" title="游戏">
-          {games.map((game) => (
-            <button
-              key={game.key}
-              className={activeGame === game.key ? 'is-active' : ''}
-              type="button"
-              onClick={() => onChangeGame(game.key)}
-            >
-              {game.shortLabel}
-            </button>
-          ))}
-        </div>
-
-        <nav className="nav-tabs" aria-label="主视图">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
+        <div className="header-control-strip">
+          <div className="segmented-control game-switcher" title="游戏">
+            {games.map((game) => (
               <button
-                key={item.key}
-                aria-label={item.label}
-                className={`nav-tab ${activeView === item.key ? 'is-active' : ''}`}
-                title={item.label}
+                key={game.key}
+                className={activeGame === game.key ? 'is-active' : ''}
                 type="button"
-                onClick={() => onChangeView(item.key)}
+                onClick={() => onChangeGame(game.key)}
               >
-                <Icon size={17} />
-                <span>{item.label}</span>
+                {game.shortLabel}
               </button>
-            );
-          })}
-        </nav>
+            ))}
+          </div>
 
-        <div className="segmented-control theme-toggle" title="主题">
+          <nav className="nav-tabs" aria-label="主视图">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  aria-label={item.label}
+                  className={`nav-tab ${activeView === item.key ? 'is-active' : ''}`}
+                  title={item.label}
+                  type="button"
+                  onClick={() => onChangeView(item.key)}
+                >
+                  <Icon size={17} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="segmented-control theme-toggle" title="主题">
+            <button
+              aria-label="跟随系统主题"
+              className={themeMode === 'system' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onChangeThemeMode('system')}
+            >
+              <Monitor size={16} />
+            </button>
+            <button
+              aria-label="深色主题"
+              className={themeMode === 'dark' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onChangeThemeMode('dark')}
+            >
+              <Moon size={16} />
+            </button>
+            <button
+              aria-label="浅色主题"
+              className={themeMode === 'light' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onChangeThemeMode('light')}
+            >
+              <Sun size={16} />
+            </button>
+          </div>
           <button
-            aria-label="跟随系统主题"
-            className={themeMode === 'system' ? 'is-active' : ''}
+            className={`icon-button ${sourceSync.bound ? 'is-bound' : ''}`}
             type="button"
-            onClick={() => onChangeThemeMode('system')}
+            onClick={onBindSource}
+            title={sourceSync.bound ? `已绑定：${sourceSync.fileName}` : sourceSync.message}
+            disabled={!sourceSync.supported}
           >
-            <Monitor size={16} />
+            <Link size={18} />
+            <span>{sourceSync.bound ? '源表' : '绑定源表'}</span>
           </button>
-          <button
-            aria-label="深色主题"
-            className={themeMode === 'dark' ? 'is-active' : ''}
-            type="button"
-            onClick={() => onChangeThemeMode('dark')}
-          >
-            <Moon size={16} />
+          {sourceSync.bound && (
+            <>
+              <button
+                className="icon-button"
+                type="button"
+                onClick={onManualSync}
+                title={sourceSync.message || '立即同步到源表'}
+                disabled={sourceSync.status === 'syncing'}
+              >
+                <Save size={18} />
+                <span>{sourceSync.status === 'syncing' ? '同步中' : '同步'}</span>
+              </button>
+              <button
+                className={`icon-button ${sourceSync.autoSync ? 'is-bound' : ''}`}
+                type="button"
+                onClick={onToggleAutoSync}
+                title={sourceSync.autoSync ? '自动同步已开启' : '自动同步已关闭'}
+              >
+                {sourceSync.autoSync ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                <span>自动</span>
+              </button>
+              <button className="icon-button muted" type="button" onClick={onUnbindSource} title="取消源表绑定">
+                <Unlink size={18} />
+              </button>
+            </>
+          )}
+          <button className="icon-button" type="button" onClick={() => void downloadSampleTemplate()} title="下载 Excel 模板">
+            <Download size={18} />
+            <span>模板</span>
           </button>
-          <button
-            aria-label="浅色主题"
-            className={themeMode === 'light' ? 'is-active' : ''}
-            type="button"
-            onClick={() => onChangeThemeMode('light')}
-          >
-            <Sun size={16} />
+          <button className="icon-button" type="button" onClick={() => void exportRecordsToExcel(records)} title="导出 Excel">
+            <Download size={18} />
+            <span>导出</span>
+          </button>
+          <button className="icon-button muted" type="button" onClick={onReset} title={`恢复${currentGame.resetLabel}`}>
+            <RotateCcw size={18} />
           </button>
         </div>
-        <button
-          className={`icon-button ${sourceSync.bound ? 'is-bound' : ''}`}
-          type="button"
-          onClick={onBindSource}
-          title={sourceSync.bound ? `已绑定：${sourceSync.fileName}` : sourceSync.message}
-          disabled={!sourceSync.supported}
-        >
-          <Link size={18} />
-          <span>{sourceSync.bound ? '源表' : '绑定源表'}</span>
-        </button>
-        {sourceSync.bound && (
-          <>
-            <button
-              className="icon-button"
-              type="button"
-              onClick={onManualSync}
-              title={sourceSync.message || '立即同步到源表'}
-              disabled={sourceSync.status === 'syncing'}
-            >
-              <Save size={18} />
-              <span>{sourceSync.status === 'syncing' ? '同步中' : '同步'}</span>
-            </button>
-            <button
-              className={`icon-button ${sourceSync.autoSync ? 'is-bound' : ''}`}
-              type="button"
-              onClick={onToggleAutoSync}
-              title={sourceSync.autoSync ? '自动同步已开启' : '自动同步已关闭'}
-            >
-              {sourceSync.autoSync ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-              <span>自动</span>
-            </button>
-            <button className="icon-button muted" type="button" onClick={onUnbindSource} title="取消源表绑定">
-              <Unlink size={18} />
-            </button>
-          </>
-        )}
-        <button className="icon-button" type="button" onClick={() => void downloadSampleTemplate()} title="下载 Excel 模板">
-          <Download size={18} />
-          <span>模板</span>
-        </button>
-        <button className="icon-button" type="button" onClick={() => void exportRecordsToExcel(records)} title="导出 Excel">
-          <Download size={18} />
-          <span>导出</span>
-        </button>
-        <button className="icon-button muted" type="button" onClick={onReset} title={`恢复${currentGame.resetLabel}`}>
-          <RotateCcw size={18} />
-        </button>
       </div>
     </header>
   );

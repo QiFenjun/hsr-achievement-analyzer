@@ -1,9 +1,8 @@
-import type { AchievementItem } from '../types';
+import type { AchievementItem, GameKey } from '../types';
 import { SOURCE_HEADERS, buildSummaryRows, recordsToSourceRows } from './importExport';
 
 const DB_NAME = 'game-completion-analyzer.source-file.v1';
 const STORE_NAME = 'handles';
-const HANDLE_KEY = 'source-workbook';
 const AUTO_SYNC_KEY = 'game-completion-analyzer.source-auto-sync.v1';
 
 type PermissionMode = 'read' | 'readwrite';
@@ -31,16 +30,16 @@ export function isSourceSyncSupported(): boolean {
   return typeof window !== 'undefined' && 'showOpenFilePicker' in window && 'indexedDB' in window;
 }
 
-export function loadAutoSyncPreference(): boolean {
-  const stored = window.localStorage.getItem(AUTO_SYNC_KEY);
+export function loadAutoSyncPreference(game: GameKey): boolean {
+  const stored = window.localStorage.getItem(getAutoSyncKey(game));
   return stored === null ? true : stored === 'true';
 }
 
-export function saveAutoSyncPreference(enabled: boolean): void {
-  window.localStorage.setItem(AUTO_SYNC_KEY, String(enabled));
+export function saveAutoSyncPreference(game: GameKey, enabled: boolean): void {
+  window.localStorage.setItem(getAutoSyncKey(game), String(enabled));
 }
 
-export async function chooseSourceWorkbook(): Promise<SourceFileHandle> {
+export async function chooseSourceWorkbook(game: GameKey): Promise<SourceFileHandle> {
   if (!isSourceSyncSupported()) {
     throw new Error('当前浏览器不支持直接写回本地文件。请使用 Chromium / Edge，并通过导出 Excel 手动保存。');
   }
@@ -61,19 +60,19 @@ export async function chooseSourceWorkbook(): Promise<SourceFileHandle> {
   });
 
   await ensureWritePermission(handle);
-  await storeSourceHandle(handle);
+  await storeSourceHandle(game, handle);
   return handle;
 }
 
-export async function getStoredSourceHandle(): Promise<SourceFileHandle | null> {
+export async function getStoredSourceHandle(game: GameKey): Promise<SourceFileHandle | null> {
   if (!isSourceSyncSupported()) {
     return null;
   }
 
-  return readHandleFromDb();
+  return readHandleFromDb(game);
 }
 
-export async function clearStoredSourceHandle(): Promise<void> {
+export async function clearStoredSourceHandle(game: GameKey): Promise<void> {
   if (!isSourceSyncSupported()) {
     return;
   }
@@ -81,7 +80,7 @@ export async function clearStoredSourceHandle(): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
-    transaction.objectStore(STORE_NAME).delete(HANDLE_KEY);
+    transaction.objectStore(STORE_NAME).delete(getHandleKey(game));
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });
@@ -187,22 +186,30 @@ function replaceSheet(workbook: { SheetNames: string[]; Sheets: Record<string, u
   workbook.SheetNames.splice(Math.max(index, 0), 0, name);
 }
 
-async function storeSourceHandle(handle: SourceFileHandle): Promise<void> {
+function getHandleKey(game: GameKey): string {
+  return `source-workbook:${game}`;
+}
+
+function getAutoSyncKey(game: GameKey): string {
+  return `${AUTO_SYNC_KEY}:${game}`;
+}
+
+async function storeSourceHandle(game: GameKey, handle: SourceFileHandle): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
-    transaction.objectStore(STORE_NAME).put(handle, HANDLE_KEY);
+    transaction.objectStore(STORE_NAME).put(handle, getHandleKey(game));
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });
   db.close();
 }
 
-async function readHandleFromDb(): Promise<SourceFileHandle | null> {
+async function readHandleFromDb(game: GameKey): Promise<SourceFileHandle | null> {
   const db = await openDb();
   const handle = await new Promise<SourceFileHandle | null>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly');
-    const request = transaction.objectStore(STORE_NAME).get(HANDLE_KEY);
+    const request = transaction.objectStore(STORE_NAME).get(getHandleKey(game));
     request.onsuccess = () => resolve((request.result as SourceFileHandle | undefined) || null);
     request.onerror = () => reject(request.error);
   });

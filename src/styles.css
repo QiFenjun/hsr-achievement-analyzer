@@ -78,6 +78,38 @@ body {
   background: var(--body-bg);
 }
 
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning .app-header,
+html.theme-transitioning .brand-mark,
+html.theme-transitioning .nav-tabs,
+html.theme-transitioning .segmented-control,
+html.theme-transitioning .nav-tab,
+html.theme-transitioning .icon-button,
+html.theme-transitioning .ghost-button,
+html.theme-transitioning .metric-card,
+html.theme-transitioning .panel,
+html.theme-transitioning .category-card,
+html.theme-transitioning .table-shell,
+html.theme-transitioning .group-stat-panel,
+html.theme-transitioning .category-progress-row,
+html.theme-transitioning .search-field,
+html.theme-transitioning .select-field,
+html.theme-transitioning .mapping-field,
+html.theme-transitioning .cell-input,
+html.theme-transitioning .completion-ring,
+html.theme-transitioning .completion-ring div,
+html.theme-transitioning .progress-track,
+html.theme-transitioning .record-table th,
+html.theme-transitioning .preview-table th {
+  transition:
+    background 260ms ease,
+    background-color 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    color 260ms ease;
+}
+
 button,
 input,
 select {
@@ -102,9 +134,9 @@ button:disabled {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: minmax(220px, auto) minmax(0, 1fr);
-  gap: 14px;
-  align-items: center;
+  grid-template-columns: minmax(230px, max-content) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
   padding: 18px clamp(18px, 4vw, 42px);
   border-bottom: 1px solid rgb(148 163 184 / 0.16);
   background: var(--header-bg);
@@ -155,10 +187,18 @@ button:disabled {
 
 .header-toolbar {
   display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.header-control-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  min-width: 0;
+  max-width: 100%;
 }
 
 .nav-tabs {
@@ -982,8 +1022,13 @@ html[data-theme='light'] .mapping-field select {
   }
 
   .header-toolbar {
-    justify-content: flex-start;
+    justify-content: flex-end;
     overflow-x: auto;
+  }
+
+  .header-control-strip {
+    justify-content: flex-end;
+    min-width: min-content;
   }
 
   .dashboard-grid,

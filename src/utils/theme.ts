@@ -1,6 +1,7 @@
 import type { ThemeMode } from '../types';
 
 const THEME_STORAGE_KEY = 'game-completion-analyzer.theme.v1';
+let themeTransitionTimer: number | undefined;
 
 export function loadThemeMode(): ThemeMode {
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -16,6 +17,16 @@ export function applyThemeMode(mode: ThemeMode): () => void {
 
   function apply() {
     const resolved = mode === 'system' ? (media.matches ? 'dark' : 'light') : mode;
+    const previousTheme = document.documentElement.dataset.theme;
+
+    if (previousTheme && previousTheme !== resolved) {
+      window.clearTimeout(themeTransitionTimer);
+      document.documentElement.classList.add('theme-transitioning');
+      themeTransitionTimer = window.setTimeout(() => {
+        document.documentElement.classList.remove('theme-transitioning');
+      }, 320);
+    }
+
     document.documentElement.dataset.theme = resolved;
     document.documentElement.dataset.themeMode = mode;
   }

@@ -21,6 +21,19 @@ import type { AchievementItem, FocusedGroup, GameKey, GroupDimension, ImportMode
 
 type ViewKey = 'dashboard' | 'table' | 'categories' | 'import';
 
+function createSourceSyncState(game: GameKey): SourceSyncUiState {
+  const supported = isSourceSyncSupported();
+
+  return {
+    supported,
+    bound: false,
+    fileName: '',
+    autoSync: loadAutoSyncPreference(game),
+    status: supported ? 'idle' : 'unsupported',
+    message: supported ? '未绑定源表' : '当前浏览器不支持直接写回本地文件',
+  };
+}
+
 function App() {
   const [activeGame, setActiveGame] = useState<GameKey>('starRail');
   const activeGameDefinition = getGameDefinition(activeGame);
@@ -30,14 +43,7 @@ function App() {
   const [importModeHint, setImportModeHint] = useState<ImportMode>('merge');
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => loadThemeMode());
   const [sourceHandle, setSourceHandle] = useState<SourceFileHandle | null>(null);
-  const [sourceSync, setSourceSync] = useState<SourceSyncUiState>(() => ({
-    supported: isSourceSyncSupported(),
-    bound: false,
-    fileName: '',
-    autoSync: loadAutoSyncPreference(),
-    status: isSourceSyncSupported() ? 'idle' : 'unsupported',
-    message: isSourceSyncSupported() ? '未绑定源表' : '当前浏览器不支持直接写回本地文件',
-  }));
+  const [sourceSync, setSourceSync] = useState<SourceSyncUiState>(() => createSourceSyncState('starRail'));
   const sourceHandleRef = useRef<SourceFileHandle | null>(null);
   const autoSyncRef = useRef(sourceSync.autoSync);
   const syncTimerRef = useRef<number | undefined>();
@@ -63,13 +69,20 @@ function App() {
 
   useEffect(() => {
     let cancelled = false;
+    const nextSourceSync = createSourceSyncState(activeGame);
+
+    sourceHandleRef.current = null;
+    setSourceHandle(null);
+    setSourceSync(nextSourceSync);
+    autoSyncRef.current = nextSourceSync.autoSync;
 
     async function restoreSourceHandle() {
-      const handle = await getStoredSourceHandle();
+      const handle = await getStoredSourceHandle(activeGame);
       if (cancelled || !handle) {
         return;
       }
 
+      sourceHandleRef.current = handle;
       setSourceHandle(handle);
       setSourceSync((current) => ({
         ...current,
@@ -84,7 +97,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeGame]);
 
   function handleUpdateRecord(id: string, patch: Partial<AchievementItem>) {
     commitRecords((current) =>
@@ -221,7 +234,8 @@ function App() {
 
   async function handleBindSource() {
     try {
-      const handle = await chooseSourceWorkbook();
+      const handle = await chooseSourceWorkbook(activeGame);
+      sourceHandleRef.current = handle;
       setSourceHandle(handle);
       setSourceSync((current) => ({
         ...current,
@@ -244,7 +258,8 @@ function App() {
   }
 
   async function handleUnbindSource() {
-    await clearStoredSourceHandle();
+    await clearStoredSourceHandle(activeGame);
+    sourceHandleRef.current = null;
     setSourceHandle(null);
     setSourceSync((current) => ({
       ...current,
@@ -258,7 +273,8 @@ function App() {
   function handleToggleAutoSync() {
     setSourceSync((current) => {
       const nextAutoSync = !current.autoSync;
-      saveAutoSyncPreference(nextAutoSync);
+      saveAutoSyncPreference(activeGame, nextAutoSync);
+      autoSyncRef.current = nextAutoSync;
       return {
         ...current,
         autoSync: nextAutoSync,
