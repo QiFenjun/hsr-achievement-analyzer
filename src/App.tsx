@@ -154,7 +154,7 @@ function App() {
       id: createNextId(latestRecordsRef.current),
       name: '新成就',
       achievementType: '非隐藏成就',
-      version: '4.2',
+      version: '4.3',
       collection: '与你同行的回忆',
       category: '与你同行的回忆',
       subCategory: '非隐藏成就',
@@ -186,7 +186,7 @@ function App() {
   }
 
   function handleReset() {
-    const confirmed = window.confirm('确定要恢复到 4.2 成就大全数据吗？当前本地修改会被覆盖。');
+    const confirmed = window.confirm('确定要恢复到 4.3 成就大全数据吗？当前本地修改会被覆盖。');
     if (!confirmed) {
       return;
     }

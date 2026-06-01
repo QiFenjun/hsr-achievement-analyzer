@@ -156,7 +156,7 @@ export function AppHeader({
           <Download size={18} />
           <span>导出</span>
         </button>
-        <button className="icon-button muted" type="button" onClick={onReset} title="恢复 4.2 成就数据">
+        <button className="icon-button muted" type="button" onClick={onReset} title="恢复 4.3 成就数据">
           <RotateCcw size={18} />
         </button>
       </div>

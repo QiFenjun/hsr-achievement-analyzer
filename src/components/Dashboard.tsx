@@ -66,7 +66,7 @@ export function Dashboard({ records, onOpenGroup, onOpenImport }: DashboardProps
             </div>
           </div>
           <p className="panel-note">
-            当前示例数据来自 4.2 版本成就大全。勾选完成状态或编辑备注后会自动保存到浏览器本地。
+            当前示例数据来自 4.3 版本成就大全。勾选完成状态或编辑备注后会自动保存到浏览器本地。
           </p>
         </section>
       </div>
