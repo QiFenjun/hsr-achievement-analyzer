@@ -1,0 +1,140 @@
+# 星穹铁道成就完成度分析工具
+
+一个本地运行的 Vite + React + TypeScript 网页项目，用于分析《崩坏：星穹铁道》成就数据。内置数据已根据 `星穹铁道成就大全（截止4.2版本）.xlsx` 重新生成，共 1781 条成就记录。
+
+## 功能
+
+- 首页总览：成就总数、已完成、未完成、完成率。
+- 主题切换：支持深色、浅色、跟随系统。
+- 分类统计：按“成就类型”“版本”“合集”“来源”四个维度分别统计完成率。
+- 数据表格：支持搜索、分组筛选、完成状态筛选、单元格直接编辑、完成状态勾选、新增成就、删除成就。
+- 分组视图：可切换成就类型、版本、合集、来源，并查看每组下的成就列表。
+- 导入：支持 `.xlsx`、`.xls`、`.json`、包含 JSON 文本的 `.txt`，导入后自动映射字段，也可以手动调整映射。
+- 导出：将当前本地修改后的完成状态和备注导出为 Excel。
+- 源表同步：在支持 File System Access API 的浏览器中，可以绑定本地 Excel 源表并自动写回。
+- 本地保存：所有修改自动写入浏览器 localStorage，不需要后端。
+
+## 运行
+
+```bash
+npm install
+npm run dev
+```
+
+启动后打开终端显示的本地地址，默认通常是：
+
+```text
+http://127.0.0.1:5173
+```
+
+## 数据结构
+
+每条记录使用以下结构：
+
+```ts
+{
+  id: string;
+  name: string;
+  achievementType: string;
+  version: string;
+  collection: string;
+  completed: boolean;
+  note?: string;
+  source?: string;
+  description?: string;
+  guide?: string;
+  reward?: string;
+  stellarJade?: number | string;
+  image?: string;
+  completedAt?: string;
+  updatedAt?: string;
+}
+```
+
+## 导入数据
+
+进入“导入”页面，选择 `.xlsx`、`.xls`、`.json` 或 `.txt` 文件。
+
+推荐 Excel 表头与成就大全保持一致：
+
+- `序号`
+- `成就名称`
+- `成就类型`
+- `版本`
+- `合集`
+- `成就描述`
+- `攻略/达成方法`
+- `奖励`
+- `星琼数`
+- `来源分组`
+- `图片`
+- `完成度`
+- `时间`
+
+如果字段名不同，系统会显示字段映射区域，可手动选择标准字段对应的原始表头。至少需要映射“成就名称”字段。
+
+导入方式：
+
+- `合并新增`：按“成就名称 + 版本 + 合集”匹配已有记录，适合用 Excel 批量添加新成就。`序号` 只作为行号处理，不参与匹配。
+- `替换当前数据`：用导入文件完全覆盖当前网页数据。
+- `直接追加`：不匹配已有记录，直接把导入行追加到末尾。
+
+JSON 文件可以是数组，也可以是包含 `data`、`records` 或 `items` 数组字段的对象。`.txt` 文件也可以导入，只要文件内容是同样格式的合法 JSON 文本即可。
+
+也支持这种已完成 ID 清单：
+
+```json
+{
+  "hsr_achievements": [4075102, 4010301]
+}
+```
+
+导入 `hsr_achievements` 时，网页会读取 StarRailStaticAPI 的中文成就数据：
+
+```text
+https://vizualabstract.github.io/StarRailStaticAPI/db/cn/achievements.json
+```
+
+能映射到中文名称的 ID 会按成就名称合并到现有记录并标记为完成；未被 StarRailStaticAPI 收录的 ID 会退回为“成就ID xxxx”记录，方便后续手动处理。因为这个映射需要访问线上静态 JSON，离线或网络失败时也会退回为 ID 记录导入。
+
+## 导出 Excel
+
+点击顶部“导出”按钮，会下载当前数据的 Excel 文件。导出内容包含用户修改后的 `完成度` 和 `备注`，也会保留成就类型、版本、合集、来源、描述、攻略、奖励等字段。
+
+## 同步源 Excel
+
+普通网页不能直接无权限写入电脑里的任意文件，因此需要先点击顶部“绑定源表”，选择本地的 `星穹铁道成就大全.xlsx` 并授权写入。
+
+绑定后：
+
+- 编辑完成度、备注或其他字段时，会自动防抖写回源表。
+- 点击“同步”可以立即写回。
+- “自动”按钮可以开关自动同步。
+- 点击取消绑定图标后，不再写回源表。
+
+写回时会更新 `成就攻略` 工作表，并重算 `汇总` 工作表。主表会保留原字段，并额外写入 `备注`、`更新时间` 两列；`序号` 会按当前导出顺序重新生成。
+
+## 本地保存
+
+所有修改会自动写入浏览器 localStorage。更换浏览器、清理站点数据或使用隐私模式可能会导致本地记录不可用。顶部重置按钮会恢复到内置的 4.2 成就大全数据。
+
+## 开源许可
+
+项目代码使用 MIT License 开源，详见 `LICENSE`。
+
+内置成就文本、游戏相关名词与图片引用归对应权利方所有，本项目仅作为本地数据整理、完成度统计和学习用途。`hsr_achievements` 的 ID 到中文名称映射来自 StarRailStaticAPI 的公开静态数据接口，使用时请遵守对应数据源的许可与说明。
+
+## 上传到 GitHub
+
+首次上传可以执行：
+
+```bash
+git init
+git add .
+git commit -m "Initial open source release"
+git branch -M main
+git remote add origin https://github.com/<your-name>/<your-repo>.git
+git push -u origin main
+```
+
+其中 `<your-name>` 和 `<your-repo>` 替换成你的 GitHub 用户名和仓库名。`.gitignore` 已排除 `node_modules`、`dist`、`work`、`outputs`、环境变量和日志文件。
