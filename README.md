@@ -27,6 +27,30 @@ npm run dev
 http://127.0.0.1:5173
 ```
 
+## 打包为 Windows exe
+
+项目已内置 Electron 桌面端配置，可以把网页打包成可双击运行的 Windows 程序。
+
+本地预览桌面版：
+
+```bash
+npm run desktop
+```
+
+生成便携版 `.exe`：
+
+```bash
+npm run dist:win
+```
+
+生成安装包 `.exe`：
+
+```bash
+npm run dist:win:installer
+```
+
+打包结果会输出到 `release/` 目录。桌面版会复用同一套本地数据逻辑，成就完成状态会保存在该应用自己的本地存储里。
+
 ## 数据结构
 
 每条记录使用以下结构：

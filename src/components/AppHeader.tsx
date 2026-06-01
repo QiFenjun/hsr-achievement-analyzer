@@ -61,7 +61,7 @@ export function AppHeader({
           <Sheet size={20} />
         </div>
         <div>
-          <p className="eyebrow">Star Rail Tracker</p>
+          <p className="eyebrow">Star Rail Tracker v{__APP_VERSION__}</p>
           <h1>星穹铁道成就分析</h1>
         </div>
       </div>
