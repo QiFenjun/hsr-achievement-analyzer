@@ -123,18 +123,3 @@ https://vizualabstract.github.io/StarRailStaticAPI/db/cn/achievements.json
 项目代码使用 MIT License 开源，详见 `LICENSE`。
 
 内置成就文本、游戏相关名词与图片引用归对应权利方所有，本项目仅作为本地数据整理、完成度统计和学习用途。`hsr_achievements` 的 ID 到中文名称映射来自 StarRailStaticAPI 的公开静态数据接口，使用时请遵守对应数据源的许可与说明。
-
-## 上传到 GitHub
-
-首次上传可以执行：
-
-```bash
-git init
-git add .
-git commit -m "Initial open source release"
-git branch -M main
-git remote add origin https://github.com/<your-name>/<your-repo>.git
-git push -u origin main
-```
-
-其中 `<your-name>` 和 `<your-repo>` 替换成你的 GitHub 用户名和仓库名。`.gitignore` 已排除 `node_modules`、`dist`、`work`、`outputs`、环境变量和日志文件。
