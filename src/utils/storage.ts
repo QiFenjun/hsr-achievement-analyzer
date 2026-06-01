@@ -61,16 +61,48 @@ function normalizeStoredRecord(item: Partial<AchievementItem>): AchievementItem 
 }
 
 function mergeStoredRecordsWithSampleData(storedRecords: AchievementItem[]): AchievementItem[] {
-  const seenSignatures = new Set(storedRecords.map(recordSignature));
+  let changed = false;
+  const sampleBySignature = new Map(sampleData.map((record) => [recordSignature(record), record]));
+  const mergedStoredRecords = storedRecords.map((record) => {
+    const sampleRecord = sampleBySignature.get(recordSignature(record));
+    if (!sampleRecord) {
+      return record;
+    }
+
+    const mergedRecord = mergeStoredRecordMetadata(record, sampleRecord);
+    if (mergedRecord !== record) {
+      changed = true;
+    }
+    return mergedRecord;
+  });
+  const seenSignatures = new Set(mergedStoredRecords.map(recordSignature));
   const missingSampleRecords = sampleData.filter((record) => !seenSignatures.has(recordSignature(record)));
 
-  if (missingSampleRecords.length === 0) {
+  if (missingSampleRecords.length === 0 && !changed) {
     return storedRecords;
   }
 
-  const mergedRecords = [...storedRecords, ...missingSampleRecords];
+  const mergedRecords = [...mergedStoredRecords, ...missingSampleRecords];
   saveRecords(mergedRecords);
   return mergedRecords;
+}
+
+function mergeStoredRecordMetadata(storedRecord: AchievementItem, sampleRecord: AchievementItem): AchievementItem {
+  const nextSource = sampleRecord.source || storedRecord.source;
+  const nextNote =
+    !storedRecord.note || storedRecord.note.startsWith('StarRailStaticAPI ID:')
+      ? sampleRecord.note || storedRecord.note
+      : storedRecord.note;
+
+  if (nextSource === storedRecord.source && nextNote === storedRecord.note) {
+    return storedRecord;
+  }
+
+  return {
+    ...storedRecord,
+    source: nextSource,
+    note: nextNote,
+  };
 }
 
 function recordSignature(record: AchievementItem): string {
