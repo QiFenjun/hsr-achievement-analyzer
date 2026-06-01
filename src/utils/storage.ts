@@ -15,9 +15,11 @@ export function loadRecords(): AchievementItem[] {
       return sampleData;
     }
 
-    return parsed
+    const storedRecords = parsed
       .filter((item): item is AchievementItem => Boolean(item && typeof item === 'object'))
       .map(normalizeStoredRecord);
+
+    return mergeStoredRecordsWithSampleData(storedRecords);
   } catch {
     return sampleData;
   }
@@ -56,6 +58,23 @@ function normalizeStoredRecord(item: Partial<AchievementItem>): AchievementItem 
     completedAt: cleanString(item.completedAt),
     updatedAt: cleanString(item.updatedAt) || new Date().toISOString(),
   };
+}
+
+function mergeStoredRecordsWithSampleData(storedRecords: AchievementItem[]): AchievementItem[] {
+  const seenSignatures = new Set(storedRecords.map(recordSignature));
+  const missingSampleRecords = sampleData.filter((record) => !seenSignatures.has(recordSignature(record)));
+
+  if (missingSampleRecords.length === 0) {
+    return storedRecords;
+  }
+
+  const mergedRecords = [...storedRecords, ...missingSampleRecords];
+  saveRecords(mergedRecords);
+  return mergedRecords;
+}
+
+function recordSignature(record: AchievementItem): string {
+  return [record.name, record.version, record.collection].map((part) => cleanString(part).toLowerCase()).join('|');
 }
 
 function cleanString(value: unknown): string {
