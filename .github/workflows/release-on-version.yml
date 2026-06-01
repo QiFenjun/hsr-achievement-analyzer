@@ -1,0 +1,106 @@
+name: Release on version change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Read package version
+        id: version
+        shell: pwsh
+        run: |
+          $pkg = Get-Content package.json -Raw | ConvertFrom-Json
+          $version = $pkg.version
+          if (-not $version) {
+            throw "package.json does not contain a version."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Check existing release
+        id: existing
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $tagExists = [bool](git ls-remote --tags origin "refs/tags/$env:TAG_NAME")
+          "tag_exists=$($tagExists.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+          $releaseJson = gh release view $env:TAG_NAME --json assets 2>$null
+          $releaseExists = $LASTEXITCODE -eq 0
+          "release_exists=$($releaseExists.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+          $assetExists = $false
+          if ($releaseExists) {
+            $release = $releaseJson | ConvertFrom-Json
+            $assetExists = [bool]($release.assets | Where-Object { $_.name -like "*-$env:VERSION-x64.exe" })
+          }
+          "asset_exists=$($assetExists.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "release_complete=$(($releaseExists -and $assetExists).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+      - name: Install dependencies
+        if: steps.existing.outputs.release_complete != 'true'
+        run: npm ci
+
+      - name: Build Windows EXE
+        if: steps.existing.outputs.release_complete != 'true'
+        run: npm run dist:win
+
+      - name: Create and push tag
+        if: steps.existing.outputs.release_complete != 'true' && steps.existing.outputs.tag_exists != 'true'
+        shell: pwsh
+        env:
+          TAG_NAME: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a $env:TAG_NAME -m "Release $env:TAG_NAME"
+          git push origin $env:TAG_NAME
+
+      - name: Publish GitHub Release
+        if: steps.existing.outputs.release_complete != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_EXISTS: ${{ steps.existing.outputs.release_exists }}
+        run: |
+          $asset = Get-ChildItem release -File -Filter "*-$env:VERSION-x64.exe" | Select-Object -First 1
+          if (-not $asset) {
+            throw "No Windows EXE found for version $env:VERSION in release/."
+          }
+
+          if ($env:RELEASE_EXISTS -eq "true") {
+            gh release upload $env:TAG_NAME $asset.FullName --clobber
+          } else {
+            gh release create $env:TAG_NAME $asset.FullName `
+              --title $env:TAG_NAME `
+              --notes "Release version $env:VERSION" `
+              --target $env:GITHUB_SHA
+          }
