@@ -1,4 +1,4 @@
-# 米哈游成就完成度分析工具
+# 星穹铁道/原神 成就完成度分析工具
 
 一个本地运行的 Vite + React + TypeScript 网页项目，用于分析《崩坏：星穹铁道》和《原神》成就数据。星穹铁道内置数据已更新至 4.3 版本，共 1811 条成就记录；原神内置数据已更新至 6.6 版本，共 1721 条成就记录。下以《崩坏：星穹铁道》为例：
 
@@ -50,30 +50,6 @@ npm run dist:win:installer
 ```
 
 打包结果会输出到 `release/` 目录。桌面版会复用同一套本地数据逻辑，成就完成状态会保存在该应用自己的本地存储里。
-
-## 数据结构
-
-每条记录使用以下结构：
-
-```ts
-{
-  id: string;
-  name: string;
-  achievementType: string;
-  version: string;
-  collection: string;
-  completed: boolean;
-  note?: string;
-  source?: string;
-  description?: string;
-  guide?: string;
-  reward?: string;
-  stellarJade?: number | string;
-  image?: string;
-  completedAt?: string;
-  updatedAt?: string;
-}
-```
 
 ## 导入数据
 
