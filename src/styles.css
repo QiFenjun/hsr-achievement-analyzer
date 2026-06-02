@@ -690,6 +690,45 @@ html[data-theme='light'] .mapping-field select {
 
 .achievement-table {
   min-width: 1360px;
+  table-layout: fixed;
+}
+
+.achievement-table .completion-column {
+  width: 112px;
+}
+
+.achievement-table .name-column {
+  width: 270px;
+}
+
+.achievement-table .type-column {
+  width: 132px;
+}
+
+.achievement-table .version-column,
+.achievement-table .reward-column {
+  width: 86px;
+}
+
+.achievement-table .collection-column,
+.achievement-table .source-column {
+  width: 160px;
+}
+
+.achievement-table .api-column {
+  width: 118px;
+}
+
+.achievement-table .note-column {
+  width: 240px;
+}
+
+.achievement-table .date-column {
+  width: 172px;
+}
+
+.achievement-table .operation-column {
+  width: 72px;
 }
 
 .record-table th,
@@ -697,7 +736,7 @@ html[data-theme='light'] .mapping-field select {
 .preview-table th,
 .preview-table td {
   border-bottom: 1px solid rgb(148 163 184 / 0.12);
-  padding: 12px;
+  padding: 12px 10px;
   vertical-align: middle;
 }
 
@@ -731,10 +770,19 @@ html[data-theme='light'] .mapping-field select {
 }
 
 .cell-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   min-height: 34px;
   border: 1px solid transparent;
   border-radius: 6px;
-  padding: 7px 8px;
+  padding: 7px 4px;
+  color: var(--text);
+  background: transparent;
+}
+
+.editable-cell {
+  padding: 6px;
 }
 
 .cell-input:focus {

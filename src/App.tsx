@@ -381,6 +381,7 @@ function App() {
         {activeView === 'table' && (
           <DataTable
             records={records}
+            game={activeGameDefinition}
             focusedGroup={focusedGroup}
             onAddRecord={handleAddRecord}
             onClearFocusedGroup={() => setFocusedGroup(null)}

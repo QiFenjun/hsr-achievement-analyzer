@@ -1,10 +1,11 @@
 import { ChevronLeft, ChevronRight, FileUp, Plus, Search, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import type { AchievementItem, FocusedGroup, GroupDimension } from '../types';
+import type { AchievementItem, FocusedGroup, GameDefinition, GroupDimension } from '../types';
 import { GROUP_DIMENSIONS, GROUP_DIMENSION_LABELS, getGroupStats, getGroupValue } from '../utils/stats';
 
 interface DataTableProps {
   records: AchievementItem[];
+  game: GameDefinition;
   focusedGroup: FocusedGroup | null;
   onAddRecord: () => void;
   onClearFocusedGroup: () => void;
@@ -26,6 +27,7 @@ type EditableField =
 
 export function DataTable({
   records,
+  game,
   focusedGroup,
   onAddRecord,
   onClearFocusedGroup,
@@ -209,6 +211,19 @@ export function DataTable({
 
       <div className="table-shell">
         <table className="record-table achievement-table">
+          <colgroup>
+            <col className="completion-column" />
+            <col className="name-column" />
+            <col className="type-column" />
+            <col className="version-column" />
+            <col className="collection-column" />
+            <col className="source-column" />
+            <col className="reward-column" />
+            <col className="api-column" />
+            <col className="note-column" />
+            <col className="date-column" />
+            <col className="operation-column" />
+          </colgroup>
           <thead>
             <tr>
               <th>完成</th>
@@ -217,7 +232,7 @@ export function DataTable({
               <th>版本</th>
               <th>合集</th>
               <th>来源</th>
-              <th>星琼</th>
+              <th>{game.rewardLabel}</th>
               <th>API ID</th>
               <th>备注</th>
               <th>更新时间/时间</th>
@@ -280,7 +295,7 @@ function EditableCell({
   wide?: boolean;
   compact?: boolean;
 }) {
-  const className = [wide ? 'wide-cell' : '', compact ? 'compact-cell' : ''].filter(Boolean).join(' ');
+  const className = ['editable-cell', wide ? 'wide-cell' : '', compact ? 'compact-cell' : ''].filter(Boolean).join(' ');
 
   return (
     <td className={className}>

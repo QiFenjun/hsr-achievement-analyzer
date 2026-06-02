@@ -31,6 +31,7 @@ export interface GameDefinition {
   shortLabel: string;
   title: string;
   subtitle: string;
+  rewardLabel: string;
   defaultVersion: string;
   defaultCollection: string;
   defaultAchievementType: string;
