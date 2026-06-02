@@ -48,6 +48,8 @@ jobs:
           TAG_NAME: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+
           $tagExists = [bool](git ls-remote --tags origin "refs/tags/$env:TAG_NAME")
           "tag_exists=$($tagExists.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
